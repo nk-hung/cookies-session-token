@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- use CDN axios -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <button id="login">Login</button> 
+  <button id="_getList">Get list</button> 
+
+  <script>
+    // create instance axios
+    const instance =  axios.create({
+      baseURL: '/api',
+      timeout: 3000,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+
+    // Xu ly data truoc khi xuong server
+    instance.interceptors.request.use((config) => {
+     console.log('truoc khi request')
+     return config 
+    }, (err) => {
+      return Promise.reject(err)
+    })
+  
+    // Xu ly data sau khi response tu server
+    instance.interceptors.response.use((res) => {
+      console.log('sau khi response')
+      return res
+    }, (err) => {
+      return Promise.reject(err)
+    })
+    
+    instance.setLocalAccessToken = async ({token, timeExpired}) => {
+      window.localStorage.setItem('accessToken', JSON.stringify({token, timeExpired}))
+    }
+    
+    // function
+    const btn_login = document.getElementById('login')
+    if (btn_login) {
+      btn_login.addEventListener('click', async () => {
+        const {status, elements: {token, timeExpired}} = await login()
+        console.log({token, timeExpired})
+        if (status === 'success') {
+          //set token vs timeExpired localStorage
+          await instance.setLocalAccessToken({token, timeExpired})
+         }
+      })
+    }
+
+    const login = async () => {
+      return (await instance.get('/login')).data
+    
+    }
+  </script>
+
+</body>
+</html>
